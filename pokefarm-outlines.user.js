@@ -7,8 +7,7 @@
 // @match        https://pokefarm.com/*
 // @grant        GM_xmlhttpRequest
 // @require      https://code.jquery.com/jquery-3.7.1.min.js
-// @updateURL
-// @downloadURL
+// @downloadURL  https://github.com/kaedeira/pokefarm-outlines/raw/refs/heads/main/pokefarm-outlines.user.js
 // @run-at document-start
 // ==/UserScript==
 /* eslint-disable */
