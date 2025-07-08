@@ -184,10 +184,18 @@ $(document).ready(function( $ ) {
 
                     const updateExamples = (e, s) => {
                         const pokemon = $(e).find('.pokemon');
-                        outline('background', pokemon, s);
+                        outlinePokemon('background', pokemon, s);
                         $(`.outline-opts li.plateform`).each((i, f) => {
                             $(f).html(pokemon[i]);
                         });
+                    }
+
+                    const setEnabledUpdate = (e, s) => {
+                        $(e).on('change', (f) => {
+                            s['enabled'] = f.target.checked;
+                            updateExamples(examples, s);
+                        });
+                        $(e).next('label').on('click', (f) => { $(e).click(); });
                     }
 
                     const setThicknessUpdate = (e, s) => {
@@ -249,10 +257,12 @@ $(document).ready(function( $ ) {
                     $('.outline-opts input[name="enable-per-page"]').on('change', (e) => {
                         switch (e.target.checked) {
                             case true:
+                                page_settings.general.advanced = true;
                                 $(e.target).parent().parent().after(perPageSettings);
                                 addPageOptionUpdate();
                                 break;
                             case false:
+                                page_settings.general.advanced = false;
                                 $(e.target).parent().parent().nextAll().each((i, e) => {
                                     if ($(e).find('#outline-page').length === 0) $(e).remove();
                                     $('.outline-opts #outline-page').html(examples);
@@ -287,12 +297,16 @@ $(document).ready(function( $ ) {
                             $(`input[name='${selected}-outline-colorwheel']`).attr('value', page_settings[selected]["color"]);
                             updateExamples(examples, page_settings[selected]);
 
+                            setEnabledUpdate($(`.outline-opts input[name="${selected}-outline-enable"]`), page_settings[selected]);
                             setThicknessUpdate($(`.outline-opts input[name="${selected}-outline-thickness"]`), page_settings[selected]);
                             setColorUpdate($(`.outline-opts input[name="${selected}-outline-color"]`), page_settings[selected]);
                             setColorWheelUpdate($(`.outline-opts input[name="${selected}-outline-colorwheel"]`), page_settings[selected]);
                         });
                         $('.outline-opts select[name="outline-page"]').trigger('change');
                     };
+
+                    // Silly way to add the page settings if it's checked by triggering an event listener...
+                    $('.outline-opts input[name="enable-per-page"]').attr('checked') ? $('.outline-opts input[name="enable-per-page"]').trigger('change') : 0;
                 })
             });
             button.insertBefore(e);
@@ -306,6 +320,16 @@ $(document).ready(function( $ ) {
         return color.color !== 'transparent' && color.color != '';
     }
 
+    function outlinePokemon(t, e, s) {
+        if (page_settings.general.advanced === true) {
+            outline(t, e, s);
+        } else if (page_settings.general.advanced === false) {
+            outline(t, e, page_settings.general);
+        } else {
+            console.log("Here be dragons!");
+        }
+    }
+
     function start() {
         const callback = (mutations, obs) => {
             for (const mutation of mutations) {
@@ -314,7 +338,7 @@ $(document).ready(function( $ ) {
                         if (mutation.type === 'attributes') {
                             if ($(mutation.target).attr('class') === 'tab-active') {
                                 let pokemon = $(mutation.target).find('.egg, .pokemon');
-                                outline('background', pokemon, page_settings['users']);
+                                outlinePokemon('background', pokemon, page_settings['users']);
                             }
                         }
                         break;
@@ -322,10 +346,10 @@ $(document).ready(function( $ ) {
                         for (const node of mutation.addedNodes) {
                             if ($(node).attr('class') == 'field') {
                                 let pokemon = $(node).find('.fieldmon > img');
-                                outline('image', pokemon, page_settings['fields']);
+                                outlinePokemon('image', pokemon, page_settings['fields']);
 
                                 pokemon = $(node).find('.pkmn > .pokemon');
-                                outline('background', pokemon, page_settings['party']);
+                                outlinePokemon('background', pokemon, page_settings['party']);
                             }
                         }
                         break;
@@ -333,19 +357,19 @@ $(document).ready(function( $ ) {
                         for (const node of mutation.addedNodes) {
                             if ($(node).attr('class') === 'pokemon') {
                                 let pokemon = $(node).find('img');
-                                outline('image', pokemon, page_settings['shelter']);
+                                outlinePokemon('image', pokemon, page_settings['shelter']);
                             }
                         }
                         break;
                     case 'lab':
                         if (mutation.type === 'childList') {
                             let pokemon = $(mutation.target).next('img');
-                            outline('image', pokemon, page_settings['lab']);
+                            outlinePokemon('image', pokemon, page_settings['lab']);
                         }
                         break;
                     case 'scour':
                         let pokemon = $(mutation.target);
-                        outline('background', pokemon, page_settings['scour']);
+                        outlinePokemon('background', pokemon, page_settings['scour']);
                 }
             }
         }
@@ -357,19 +381,19 @@ $(document).ready(function( $ ) {
         switch (page) {
             case 'party':
                 pokemon = $.merge($('.pokemon'), $('.egg'));
-                outline('background', pokemon, page_settings['party']);
+                outlinePokemon('background', pokemon, page_settings['party']);
                 break;
             case 'user':
                 pokemon = $.merge($('.pokemon'), $('.egg'));
-                outline('background', pokemon, page_settings['user']);
+                outlinePokemon('background', pokemon, page_settings['user']);
                 break;
             case 'scour':
                 pokemon = $.merge($('.pokemon'), $('.egg'));
-                outline('background', pokemon, page_settings['scour']);
+                outlinePokemon('background', pokemon, page_settings['scour']);
                 break;
             case 'daycare':
                 pokemon = $.merge($('.pokemon'), $('.egg'));
-                outline('background', pokemon, page_settings['daycare']);
+                outlinePokemon('background', pokemon, page_settings['daycare']);
 
                 pokemon.each((i, e) => {
                     observer.observe($('.pokemon')[0], config);
@@ -385,10 +409,10 @@ $(document).ready(function( $ ) {
                 break;
             case 'fields':
                 pokemon = $.merge($('.pokemon'), $('.egg'));
-                outline('background', pokemon, page_settings['party']);
+                outlinePokemon('background', pokemon, page_settings['party']);
 
                 pokemon = $('#field_field > .field > .fieldmon > img');
-                outline('image', pokemon, page_settings['fields']);
+                outlinePokemon('image', pokemon, page_settings['fields']);
 
                 observer.observe($('#field_field')[0], config);
                 break;
@@ -433,6 +457,9 @@ $(document).ready(function( $ ) {
     // Takes a list of elements to find and replace images with outlined images
     function outline(type, elements, settings = { 'enabled' : false, 'thickness' : 1, 'color' : '#000000' }) {
         var patt=/\"|\'|\)|\(|url/g;
+
+        // If settings are disabled why continue...
+        if(!settings.enabled) return false;
 
         elements.each(async (i, e) => {
             var url = (type == 'background') ? $(e).css('background-image').replace(patt, '') : '';
