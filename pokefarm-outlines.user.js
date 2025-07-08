@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Outline Pokémon
 // @namespace    https://pokefarm.com/
-// @version      2025-07-07
+// @version      2025-07-08
 // @description  Creates a settings page for outlining Pokémon images on site.
 // @author       Hakano Riku
 // @match        https://pokefarm.com/*
