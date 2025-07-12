@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Outline Pokémon
 // @namespace    https://pokefarm.com/
-// @version      2025-07-11
+// @version      2025-07-12
 // @description  Creates a settings page for outlining Pokémon images on site.
 // @author       Hakano Riku
 // @match        https://pokefarm.com/*
@@ -191,7 +191,7 @@ $(document).ready(function( $ ) {
                     const setEnabledUpdate = (e, s) => {
                         $(e).on('change', (f) => {
                             s['enabled'] = f.target.checked;
-                            updateExamples(examples, s);
+                            updateExamples(examples(), s);
                         });
                         $(e).next('label').on('click', (f) => { $(e).click(); });
                     }
@@ -199,14 +199,14 @@ $(document).ready(function( $ ) {
                     const setThicknessUpdate = (e, s) => {
                         $(e).on('input', (f) => {
                             s['thickness'] = $.isNumeric(f.target.value) ? f.target.value : 0;
-                            updateExamples(examples, s);
+                            updateExamples(examples(), s);
                         });
                     }
 
                     const setColorUpdate = (e, s) => {
                         $(e).on('input', (f) => {
                             s['color'] = isValidColor(f.target.value) ? f.target.value : 'transparent';
-                            updateExamples(examples, s);
+                            updateExamples(examples(), s);
                         });
                     }
 
@@ -225,8 +225,8 @@ $(document).ready(function( $ ) {
                     $(`input[name='outline-colorwheel']`).attr('value', page_settings['general']['color']);
                     $(`input[name='enable-per-page']`).attr('checked', page_settings['general']['advanced']);
 
-                    $('.outline-opts #outline-page').html(examples);
-                    updateExamples(examples, page_settings.general);
+                    $('.outline-opts #outline-page').html(examples());
+                    updateExamples(examples(), page_settings.general);
 
                     $('.outline-opts input[name="outline-enable"]').on('change', (e) => {
                         switch (e.target.checked) {
@@ -263,8 +263,8 @@ $(document).ready(function( $ ) {
                                 page_settings.general.advanced = false;
                                 $(e.target).parent().parent().nextAll().each((i, e) => {
                                     if ($(e).find('#outline-page').length === 0) $(e).remove();
-                                    $('.outline-opts #outline-page').html(examples);
-                                    updateExamples(examples, page_settings.general);
+                                    $('.outline-opts #outline-page').html(examples());
+                                    updateExamples(examples(), page_settings.general);
                                 });
                                 break;
                         }
@@ -285,7 +285,7 @@ $(document).ready(function( $ ) {
                                  <tr><td><input type='number' name=${selected}-outline-thickness min=1 max=5><label for='${selected}-outline-thickness'>${page_layouts[selected]} Outline Thickness</label></td></tr>
                                  <tr><td><label for='${selected}-outline-color'>${page_layouts[selected]} Outline Color</label><input type='text' name='${selected}-outline-color' placeholder='#FFFFFF'><input type='color' name='${selected}-outline-colorwheel'></td></tr>
                                  <tr><td><h4>${page_layouts[selected]} Outline Examples</h4></td></tr>
-                                 <tr><td><div id='${selected}-examples'><ul class='spritelist'>${examples}</ul></div></td></tr>
+                                 <tr><td><div id='${selected}-examples'><ul class='spritelist'>${examples()}</ul></div></td></tr>
                                  </table>`
                             );
 
@@ -293,7 +293,7 @@ $(document).ready(function( $ ) {
                             $(`input[name='${selected}-outline-thickness']`).attr('value', page_settings[selected]["thickness"]);
                             $(`input[name='${selected}-outline-color']`).attr('value', page_settings[selected]["color"]);
                             $(`input[name='${selected}-outline-colorwheel']`).attr('value', page_settings[selected]["color"]);
-                            updateExamples(examples, page_settings[selected]);
+                            updateExamples(examples(), page_settings[selected]);
 
                             setEnabledUpdate($(`.outline-opts input[name="${selected}-outline-enable"]`), page_settings[selected]);
                             setThicknessUpdate($(`.outline-opts input[name="${selected}-outline-thickness"]`), page_settings[selected]);
