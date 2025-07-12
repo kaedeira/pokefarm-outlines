@@ -188,25 +188,25 @@ $(document).ready(function( $ ) {
                         });
                     }
 
-                    const setEnabledUpdate = (e, s) => {
+                    const setEnabledUpdate = (p, e, s) => {
                         $(e).on('change', (f) => {
                             s['enabled'] = f.target.checked;
-                            updateExamples(examples(), s);
+                            updateExamples(examples(p), s);
                         });
                         $(e).next('label').on('click', (f) => { $(e).click(); });
                     }
 
-                    const setThicknessUpdate = (e, s) => {
+                    const setThicknessUpdate = (p, e, s) => {
                         $(e).on('input', (f) => {
                             s['thickness'] = $.isNumeric(f.target.value) ? f.target.value : 0;
-                            updateExamples(examples(), s);
+                            updateExamples(examples(p), s);
                         });
                     }
 
-                    const setColorUpdate = (e, s) => {
+                    const setColorUpdate = (p, e, s) => {
                         $(e).on('input', (f) => {
                             s['color'] = isValidColor(f.target.value) ? f.target.value : 'transparent';
-                            updateExamples(examples(), s);
+                            updateExamples(examples(p), s);
                         });
                     }
 
@@ -247,8 +247,8 @@ $(document).ready(function( $ ) {
                     });
 
                     // Add event listener for general settings
-                    setThicknessUpdate($('.outline-opts input[name="outline-thickness"]'), page_settings.general);
-                    setColorUpdate($('.outline-opts input[name="outline-color"]'), page_settings.general);
+                    setThicknessUpdate('general', $('.outline-opts input[name="outline-thickness"]'), page_settings.general);
+                    setColorUpdate('general', $('.outline-opts input[name="outline-color"]'), page_settings.general);
                     setColorWheelUpdate($('.outline-opts input[name="outline-colorwheel"]'), page_settings.general);
 
                     // Add event listener for determining general or per-page settings
@@ -285,7 +285,7 @@ $(document).ready(function( $ ) {
                                  <tr><td><input type='number' name=${selected}-outline-thickness min=1 max=5><label for='${selected}-outline-thickness'>${page_layouts[selected]} Outline Thickness</label></td></tr>
                                  <tr><td><label for='${selected}-outline-color'>${page_layouts[selected]} Outline Color</label><input type='text' name='${selected}-outline-color' placeholder='#FFFFFF'><input type='color' name='${selected}-outline-colorwheel'></td></tr>
                                  <tr><td><h4>${page_layouts[selected]} Outline Examples</h4></td></tr>
-                                 <tr><td><div id='${selected}-examples'><ul class='spritelist'>${examples()}</ul></div></td></tr>
+                                 <tr><td><div id='${selected}-examples'><ul class='spritelist'>${examples(selected)}</ul></div></td></tr>
                                  </table>`
                             );
 
@@ -295,9 +295,9 @@ $(document).ready(function( $ ) {
                             $(`input[name='${selected}-outline-colorwheel']`).attr('value', page_settings[selected]["color"]);
                             updateExamples(examples(), page_settings[selected]);
 
-                            setEnabledUpdate($(`.outline-opts input[name="${selected}-outline-enable"]`), page_settings[selected]);
-                            setThicknessUpdate($(`.outline-opts input[name="${selected}-outline-thickness"]`), page_settings[selected]);
-                            setColorUpdate($(`.outline-opts input[name="${selected}-outline-color"]`), page_settings[selected]);
+                            setEnabledUpdate(selected, $(`.outline-opts input[name="${selected}-outline-enable"]`), page_settings[selected]);
+                            setThicknessUpdate(selected, $(`.outline-opts input[name="${selected}-outline-thickness"]`), page_settings[selected]);
+                            setColorUpdate(selected, $(`.outline-opts input[name="${selected}-outline-color"]`), page_settings[selected]);
                             setColorWheelUpdate($(`.outline-opts input[name="${selected}-outline-colorwheel"]`), page_settings[selected]);
                         });
                         $('.outline-opts select[name="outline-page"]').trigger('change');
