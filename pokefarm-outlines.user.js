@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Outline Pokémon
 // @namespace    https://pokefarm.com/
-// @version      2025-07-09
+// @version      2025-07-11
 // @description  Creates a settings page for outlining Pokémon images on site.
 // @author       Hakano Riku
 // @match        https://pokefarm.com/*
@@ -17,6 +17,8 @@ $(document).ready(function( $ ) {
     $.noConflict();
     const path = window.location.pathname;
     const page = path.split('/')[1];
+
+    const user = $('#core').attr('data-user');
 
     const example_images = [
         '/img/pkmn/h/w/o/h.png',
@@ -75,43 +77,26 @@ $(document).ready(function( $ ) {
                     </select>
                     </td></tr>`;
 
-    // Get and/or set cookie data
-    const cookie_name = 'OutlineSettings';
-    const cookies = document.cookie.split(';');
+    // Get get/create settings in local storage
+	const setSettings = (settings) => {
+		localStorage.setItem(`${user}.outlines`, JSON.stringify(settings));
+	}
 
-    const cookieGet = () => {
-        for (let i = 0; i < cookies.length; i++) {
-            let cookie = cookies[i].trim();
-            if (cookie.startsWith(cookie_name + "=")) {
-                const cookie_value = cookie.substring(cookie_name.length + 1);
-                try {
-                    return JSON.parse(cookie_value);
-                } catch (e) {
-                    console.log('Unable to parse cookies.');
-                    return null;
-                }
-            }
+    const getSettings = () => {
+        const s = localStorage.getItem(`${user}.outlines`);
+        if (s) {
+            try {
+				return JSON.parse(s);
+            } catch (e) {
+				console.log(`Unable to parse localStorage item '${user}.outlines'`);
+				return null;
+			}
+        } else {
+            setSettings(page_settings);
+            return page_settings;
         }
-        return null;
-    };
-
-    const cookieSet = (settings) => {
-        try {
-            document.cookie = `OutlineSettings=${JSON.stringify(settings)}; SameSite=Lax; Secure`;
-        } catch (e) {
-            console.log('Unable to set cookie data.');
-        }
-    };
-
-    // Set default cookie settings if not yet set
-    const cookie = cookieGet();
-    !cookie ? cookieSet(page_settings) : page_settings = cookie;
-    if (cookie == null) {
-        cookieSet(page_settings);
-    } else {
-        page_settings = cookie;
-        console.log(cookie);
     }
+	page_settings = getSettings();
 
     // Setup settings button in announcements bar
     const announcements = $('#announcements > ul > li');
@@ -128,8 +113,7 @@ $(document).ready(function( $ ) {
                         right: !0,
                         action: () => {
                             // Revert settings back to cookie data
-                            page_settings = cookieGet();
-                            console.log('Closed settings');
+                            page_settings = getSettings();
                         }
                     },
                     {
@@ -137,7 +121,7 @@ $(document).ready(function( $ ) {
                         left: !0,
                         action: () => {
                             // Save settings to cookie data and update
-                            cookieSet(page_settings);
+							setSettings(page_settings);
                         }
                     }]
                 )).opened(async () => {
@@ -147,17 +131,31 @@ $(document).ready(function( $ ) {
                     sprites[2] = await getSprite(example_images[2]);
                     sprites[3] = await getSprite(example_images[3]);
 
-                    const examples = `<table style='width: 100%;'>
-                                      <tr><td><h4>Outline Examples</h4></td></tr>
-                                      <tr><td><div id='outline-examples'><ul class='spritelist'>
-                                      <li class='plateform'><div class='pokemon' style='background-image: url(${sprites[0].src});'></div></li>
-                                      <li class='plateform'><div class='pokemon' style='background-image: url(${sprites[1].src});'></div></li>
-                                      <li class='plateform'><div class='pokemon' style='background-image: url(${sprites[2].src});'></div></li>
-                                      <li class='plateform'><div class='pokemon' style='background-image: url(${sprites[3].src});'></div></li>
-                                      </ul></div></td></tr>
-                                      </table>`;
+					let styles = [];
 
-                    let style = `.spritelist { list-style-type: none; padding: 0; margin: 0; text-align: center; }
+                    const examples = (page) => {
+						try {
+							const title = `${page_layouts[page]} Outline Examples`;
+							const id = `${page}-outline-examples`;
+							const html = `<table style='width: 100%;'>
+										  <tr><td><h4>${title}</h4></td></tr>
+										  <tr><td><div id='${id}'><ul class='spritelist'>
+										  <li class='plateform'><div class='pokemon' style='background-image: url(${sprites[0].src});'></div></li>
+										  <li class='plateform'><div class='pokemon' style='background-image: url(${sprites[1].src});'></div></li>
+										  <li class='plateform'><div class='pokemon' style='background-image: url(${sprites[2].src});'></div></li>
+										  <li class='plateform'><div class='pokemon' style='background-image: url(${sprites[3].src});'></div></li>
+										  </ul></div></td></tr>
+										  </table>`;
+							return html;
+						} catch (e) {
+							console.log('Invalid page type in examples');
+							return false;
+						}
+					}
+
+
+                    let style = `.dialog h3 { margin-top: 8px; }
+								 .spritelist { list-style-type: none; padding: 0; margin: 0; text-align: center; }
                                  .spritelist > li { display: inline-block; margin: 0 8px 8px; }
                                  .plateform { width: 100px; height: 100px; box-sizing: border-box; position: relative; }
                                  .plateform:before {
@@ -173,7 +171,7 @@ $(document).ready(function( $ ) {
                                      border-bottom-width: medium;
                                      border-left-width: medium;
                                      border-width: 1px 3px 5px;
-                                     background-color: #705d8d;
+                                     //background-color: #705d8d;
                                      position: absolute;
                                      bottom: 0;
                                  }
